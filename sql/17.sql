@@ -1,3 +1,32 @@
+SELECT
+    rank,
+    title,
+    revenue,
+    SUM(revenue) OVER (
+        ORDER BY revenue DESC
+    ) AS "total revenue"
+FROM (
+    SELECT
+        RANK() OVER (ORDER BY revenue DESC) AS rank,
+        title,
+        revenue
+    FROM (
+        SELECT
+            film.title,
+            COALESCE(
+                SUM(payment.amount), 0
+            )::numeric(12,2) AS revenue
+        FROM film
+        LEFT JOIN inventory
+            ON film.film_id = inventory.film_id
+        LEFT JOIN rental
+            ON inventory.inventory_id = rental.inventory_id
+        LEFT JOIN payment
+            ON rental.rental_id = payment.rental_id
+        GROUP BY film.film_id, film.title
+    ) AS film_totals
+) AS ranked_films
+ORDER BY rank, title;
 /*
  * Compute the total revenue for each film.
  * The output should include another new column "total revenue" that shows the sum of all the revenue of all previous films.

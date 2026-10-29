@@ -1,3 +1,13 @@
+SELECT film_id, title
+FROM film
+WHERE rating IN (
+    SELECT rating
+    FROM film
+    GROUP BY rating
+    ORDER BY COUNT(*) DESC
+    LIMIT 2
+)
+ORDER BY title;
 /*
  * A film's rating can be either G, PG, PG-13, etc.
  * First, generate a query that returns the two most popular ratings.

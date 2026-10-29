@@ -1,3 +1,37 @@
+WITH film_totals AS (
+    SELECT
+        film.film_id,
+        film.title,
+        COALESCE(SUM(payment.amount), 0)::numeric(12,2) AS revenue
+    FROM film
+    LEFT JOIN inventory
+        ON film.film_id = inventory.film_id
+    LEFT JOIN rental
+        ON inventory.inventory_id = rental.inventory_id
+    LEFT JOIN payment
+        ON rental.rental_id = payment.rental_id
+    GROUP BY film.film_id, film.title
+),
+ranked_films AS (
+    SELECT
+        RANK() OVER (ORDER BY revenue DESC) AS rank,
+        title,
+        revenue,
+        SUM(revenue) OVER (ORDER BY revenue DESC) AS "total revenue",
+        SUM(revenue) OVER () AS overall_revenue
+    FROM film_totals
+)
+SELECT
+    rank,
+    title,
+    revenue,
+    "total revenue",
+    TO_CHAR(
+        100 * "total revenue" / overall_revenue,
+        'FM9900.00'
+    ) AS "percent revenue"
+FROM ranked_films
+ORDER BY rank, title;
 /*
  * Compute the total revenue for each film.
  * The output should include another new column "revenue percent" that shows the percent of total revenue that comes from the current film and all previous films.

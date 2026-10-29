@@ -1,3 +1,20 @@
+SELECT unnest(special_features) AS special_feature,
+       SUM(profit) AS profit
+FROM (
+    SELECT film.film_id,
+           film.special_features,
+           SUM(payment.amount) AS profit
+    FROM film
+    JOIN inventory
+        ON film.film_id = inventory.film_id
+    JOIN rental
+        ON inventory.inventory_id = rental.inventory_id
+    JOIN payment
+        ON rental.rental_id = payment.rental_id
+    GROUP BY film.film_id, film.special_features
+) AS film_profits
+GROUP BY special_feature
+ORDER BY special_feature;
 /*
  * Management is planning on purchasing new inventory.
  * Films with special features cost more to purchase than films without special features,

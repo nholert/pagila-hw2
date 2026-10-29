@@ -1,3 +1,16 @@
+SELECT behind.title
+FROM (
+    SELECT title
+    FROM film
+    WHERE 'Behind the Scenes' = ANY(special_features)
+) AS behind
+INNER JOIN (
+    SELECT title
+    FROM film
+    WHERE 'Trailers' = ANY(special_features)
+) AS trailers
+ON behind.title = trailers.title
+ORDER BY behind.title;
 /*
  * List the title of all movies that have both the 'Behind the Scenes' and the 'Trailers' special_feature
  *

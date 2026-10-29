@@ -1,3 +1,18 @@
+SELECT DISTINCT customer.customer_id
+FROM film
+JOIN inventory ON film.film_id = inventory.film_id
+JOIN rental ON inventory.inventory_id = rental.inventory_id
+JOIN customer ON rental.customer_id = customer.customer_id
+WHERE film.film_id IN (
+    SELECT inventory.film_id
+    FROM inventory
+    JOIN rental ON inventory.inventory_id = rental.inventory_id
+    JOIN payment ON rental.rental_id = payment.rental_id
+    GROUP BY inventory.film_id
+    ORDER BY SUM(payment.amount) DESC
+    LIMIT 5
+)
+ORDER BY customer.customer_id;
 /*
  * Management wants to send coupons to customers who have previously rented one of the top-5 most profitable movies.
  * Your task is to list these customers.
